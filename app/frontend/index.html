@@ -30,22 +30,57 @@
         <div id="games"></div>
     </div>
     <script>
-        async function reg() {
-            const r = await fetch('/players/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:document.getElementById('uname').value})});
-            const d = await r.json(); document.getElementById('pid').value = d.id;
+    async function reg() {
+        try {
+            // Geändert: '/players' statt '/players/' passend zum Backend-Prefix
+            const r = await fetch('/players', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: document.getElementById('uname').value})
+            });
+
+            if (!r.ok) throw new Error('Registrierung fehlgeschlagen');
+
+            const d = await r.json();
+            document.getElementById('pid').value = d.id;
+            alert("Erfolgreich registriert! Deine ID ist: " + d.id);
+        } catch (err) {
+            alert("Fehler: " + err.message);
         }
-        async function link() {
-            const pid = document.getElementById('pid').value;
-            await fetch(`/players/${pid}/link`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({steam_id:document.getElementById('sid').value})});
+    }
+
+    async function link() {
+        const pid = document.getElementById('pid').value;
+        if (!pid) return alert("Bitte zuerst registrieren!");
+
+        try {
+            const r = await fetch(`/players/${pid}/link`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({steam_id: document.getElementById('sid').value})
+            });
+
+            if (!r.ok) throw new Error('Verknüpfung fehlgeschlagen');
+
             load(pid);
+        } catch (err) {
+            alert("Fehler beim Verknüpfen: " + err.message);
         }
-        async function load(pid) {
+    }
+
+    async function load(pid) {
+        try {
             const r = await fetch(`/players/${pid}/card`);
+            if (!r.ok) throw new Error('Card konnte nicht geladen werden');
+
             const d = await r.json();
             document.getElementById('union-card').style.display = 'block';
             document.getElementById('name').innerText = d.steam.personaname;
             document.getElementById('status').innerText = "Spiele gefunden: " + d.games.length;
+        } catch (err) {
+            console.error(err);
         }
-    </script>
+    }
+</script>
 </body>
 </html>
