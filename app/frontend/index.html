@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayerUnion ID | Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 40px; text-align: center; }
+        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px auto; max-width: 500px; border: 1px solid #334155; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; background: #7000ff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #union-card { display: none; border-left: 5px solid #00f2ff; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>PLAYERUNION ID</h1>
+    <div class="card">
+        <h3>1. Registrieren</h3>
+        <input type="text" id="uname" placeholder="Username">
+        <button onclick="reg()">Erstellen</button>
+    </div>
+    <div class="card">
+        <h3>2. Steam Link</h3>
+        <input type="text" id="pid" placeholder="Pulse-ID">
+        <input type="text" id="sid" placeholder="SteamID64">
+        <button onclick="link()">Verknüpfen</button>
+    </div>
+    <div id="union-card" class="card">
+        <h2 id="name"></h2>
+        <p id="status"></p>
+        <div id="games"></div>
+    </div>
+    <script>
+        async function reg() {
+            const r = await fetch('/players/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:document.getElementById('uname').value})});
+            const d = await r.json(); document.getElementById('pid').value = d.id;
+        }
+        async function link() {
+            const pid = document.getElementById('pid').value;
+            await fetch(`/players/${pid}/link`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({steam_id:document.getElementById('sid').value})});
+            load(pid);
+        }
+        async function load(pid) {
+            const r = await fetch(`/players/${pid}/card`);
+            const d = await r.json();
+            document.getElementById('union-card').style.display = 'block';
+            document.getElementById('name').innerText = d.steam.personaname;
+            document.getElementById('status').innerText = "Spiele gefunden: " + d.games.length;
+        }
+    </script>
+</body>
+</html>
