@@ -87,43 +87,55 @@
     }
 
     async function load_player_card(player_id) {
-        try {
-            const response = await fetch(`/players/${player_id}/card`);
-            if (!response.ok) throw new Error('Card konnte nicht geladen werden');
+    try {
+        const response = await fetch(`/players/${player_id}/card`);
+        if (!response.ok) throw new Error('Card konnte nicht geladen werden');
 
-            const data = await response.json();
+        const data = await response.json();
 
-            // UI Einblenden & Basisdaten
-            document.getElementById('union_card').style.display = 'block';
-            document.getElementById('display_name').innerText = data.steam.personaname;
-            document.getElementById('game_count_status').innerText = `Gefundene Spiele: ${data.games.length}`;
+        document.getElementById('union_card').style.display = 'block';
+        document.getElementById('display_name').innerText = data.steam.personaname;
+        document.getElementById('game_count_status').innerText = `Gefundene Spiele: ${data.games.length}`;
 
-            const list_container = document.getElementById('game_list');
-            list_container.innerHTML = '<h3>Deine Top Spiele:</h3>';
+        const list_container = document.getElementById('game_list');
+        list_container.innerHTML = '<h3>Deine Top Spiele (nach Spielzeit):</h3>';
 
-            if (data.games && data.games.length > 0) {
-                // Sortierung nach Spielzeit (Snake Case Variable)
-                const sorted_games = data.games.sort((a, b) => b.playtime_forever - a.playtime_forever);
+        if (data.games && data.games.length > 0) {
+            // SICHERE SORTIERUNG:
+            // Wir erstellen eine Kopie der Liste und erzwingen Zahlen-Vergleiche
+            const sorted_games = [...data.games].sort((a, b) => {
+                const time_a = parseFloat(a.playtime_forever) || 0;
+                const time_b = parseFloat(b.playtime_forever) || 0;
+                return time_b - time_a; // Höchste Zeit nach oben
+            });
 
-                sorted_games.forEach(game => {
-                    const hours_played = (game.playtime_forever / 60).toFixed(1);
-                    const game_row = document.createElement('div');
-                    game_row.className = 'game_item';
+            sorted_games.forEach(game => {
+                const minutes = parseFloat(game.playtime_forever) || 0;
+                const hours_played = (minutes / 60).toFixed(1);
 
-                    game_row.innerHTML = `
-                        <span>${game.name}</span>
-                        <span class="playtime">${hours_played} Std.</span>
-                    `;
+                const game_row = document.createElement('div');
+                game_row.className = 'game_item';
 
-                    list_container.appendChild(game_row);
-                });
-            } else {
-                list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
-            }
-        } catch (error) {
-            console.error("Frontend Fehler:", error);
+                // Styling direkt im JS für den schnellen Fix
+                game_row.style.display = 'flex';
+                game_row.style.justifyContent = 'space-between';
+                game_row.style.padding = '8px 0';
+                game_row.style.borderBottom = '1px solid #334155';
+
+                game_row.innerHTML = `
+                    <span>${game.name}</span>
+                    <span style="color: #00f2ff; font-weight: bold;">${hours_played} Std.</span>
+                `;
+
+                list_container.appendChild(game_row);
+            });
+        } else {
+            list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
         }
+    } catch (error) {
+        console.error("Frontend Fehler:", error);
     }
+}
     </script>
 </body>
 </html>
