@@ -2,142 +2,226 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlayerUnion ID | Dashboard</title>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
+            --bg-body: #020617;
+            --card-bg: rgba(30, 41, 59, 0.7);
             --accent: #7000ff;
-            --border: #334155;
             --neon: #00f2ff;
+            --text-main: #f8fafc;
+            --border: rgba(51, 65, 85, 0.5);
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; padding: 40px; text-align: center; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; margin: 15px auto; max-width: 550px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid var(--border); background: #0f172a; color: white; }
-        button { width: 90%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        #union_card { display: none; border-left: 5px solid var(--neon); text-align: left; }
-        .game_item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95em; }
-        .playtime { color: var(--neon); font-weight: bold; }
-        h1 { letter-spacing: 2px; text-transform: uppercase; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, var(--bg-body));
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            letter-spacing: 4px;
+            background: linear-gradient(to right, var(--neon), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover { transform: translateY(-5px); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-badge {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--neon);
+        }
+
+        input {
+            width: calc(100% - 24px);
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            margin: 10px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, var(--accent), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: filter 0.2s;
+        }
+
+        button:hover { filter: brightness(1.2); }
+
+        #game_list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding-right: 10px;
+        }
+
+        /* Scrollbar Styling */
+        #game_list::-webkit-scrollbar { width: 6px; }
+        #game_list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        .game_item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 8px;
+            border-radius: 8px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
+
     <h1>PLAYERUNION ID</h1>
 
-    <div class="card">
-        <h3>1. Registrieren</h3>
-        <input type="text" id="uname" placeholder="Username">
-        <button onclick="register_user()">Account erstellen</button>
+    <div class="glass-card">
+        <h3>User Management</h3>
+        <input type="text" id="username_field" placeholder="Username">
+        <button onclick="register_account()">Account erstellen</button>
+
+        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
+            <input type="text" id="player_id_field" placeholder="Deine ID">
+            <input type="text" id="steam_id_field" placeholder="SteamID64">
+            <button onclick="link_steam_account()" style="background: #1e293b; border: 1px solid var(--accent);">Steam Verknüpfen</button>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>2. Steam Link</h3>
-        <input type="text" id="pid" placeholder="Pulse-ID">
-        <input type="text" id="sid" placeholder="SteamID64">
-        <button onclick="link_steam()">Verknüpfen</button>
-    </div>
+    <div id="player_display_card" class="glass-card" style="display: none;">
+        <h2 id="steam_name" style="margin-top: 0; color: var(--neon);"></h2>
 
-    <div id="union_card" class="card">
-        <h2 id="display_name"></h2>
-        <p id="game_count_status"></p>
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+        <div class="stats-grid">
+            <div class="stat-badge">
+                <span class="stat-value" id="count_display">0</span>
+                <small>Spiele</small>
+            </div>
+            <div class="stat-badge">
+                <span class="stat-value" id="time_display">0</span>
+                <small>Gesamtstunden</small>
+            </div>
+        </div>
+
         <div id="game_list"></div>
     </div>
 
     <script>
-    async function register_user() {
-        const username_input = document.getElementById('uname').value;
+    // Dein gewünschter Snake Case Style
+    async function register_account() {
+        const username = document.getElementById('username_field').value;
         try {
             const response = await fetch('/players', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: username_input})
+                body: JSON.stringify({username: username})
             });
-
-            if (!response.ok) throw new Error('Registrierung fehlgeschlagen');
-
             const data = await response.json();
-            document.getElementById('pid').value = data.id;
-            alert(`Erfolgreich registriert! Deine ID: ${data.id}`);
-        } catch (error) {
-            alert(`Fehler: ${error.message}`);
-        }
+            document.getElementById('player_id_field').value = data.id;
+            alert("Account erstellt! ID wurde kopiert.");
+        } catch (error) { console.error("Fehler:", error); }
     }
 
-    async function link_steam() {
-        const player_id = document.getElementById('pid').value;
-        const steam_id = document.getElementById('sid').value;
-
-        if (!player_id) return alert("Bitte zuerst registrieren!");
-
+    async function link_steam_account() {
+        const p_id = document.getElementById('player_id_field').value;
+        const s_id = document.getElementById('steam_id_field').value;
         try {
-            const response = await fetch(`/players/${player_id}/link`, {
+            await fetch(`/players/${p_id}/link`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({steam_id: steam_id})
+                body: JSON.stringify({steam_id: s_id})
             });
-
-            if (!response.ok) throw new Error('Verknüpfung fehlgeschlagen');
-
-            load_player_card(player_id);
-        } catch (error) {
-            alert(`Fehler beim Verknüpfen: ${error.message}`);
-        }
+            load_ui_data(p_id);
+        } catch (error) { console.error("Fehler:", error); }
     }
 
-    async function load_player_card(player_id) {
-    try {
-        const response = await fetch(`/players/${player_id}/card`);
-        if (!response.ok) throw new Error('Card konnte nicht geladen werden');
+    async function load_ui_data(p_id) {
+        try {
+            const response = await fetch(`/players/${p_id}/card`);
+            const data = await response.json();
 
-        const data = await response.json();
+            document.getElementById('player_display_card').style.display = 'block';
+            document.getElementById('steam_name').innerText = data.steam.personaname;
 
-        document.getElementById('union_card').style.display = 'block';
-        document.getElementById('display_name').innerText = data.steam.personaname;
+            const list_container = document.getElementById('game_list');
+            list_container.innerHTML = '';
 
-        const list_container = document.getElementById('game_list');
-        list_container.innerHTML = '<h3>Deine Top Spiele:</h3>';
-
-        if (data.games && data.games.length > 0) {
             let total_minutes = 0;
 
-            const sorted_games = [...data.games].sort((game_a, game_b) => {
-                return game_b.playtime_forever - game_a.playtime_forever;
-            });
+            // Sortierung nach Spielzeit (Snake Case)
+            const sorted_games = [...data.games].sort((a, b) => b.playtime_forever - a.playtime_forever);
 
             sorted_games.forEach(game => {
                 total_minutes += game.playtime_forever;
+                const hours = (game.playtime_forever / 60).toFixed(1);
 
-                const hours_played = (game.playtime_forever / 60).toFixed(1);
-                const game_row = document.createElement('div');
-
-                // Styling für bessere Lesbarkeit
-                game_row.style.display = 'flex';
-                game_row.style.justifyContent = 'space-between';
-                game_row.style.padding = '8px 0';
-                game_row.style.borderBottom = '1px solid #334155';
-
-                game_row.innerHTML = `
+                const row = document.createElement('div');
+                row.className = 'game_item';
+                row.innerHTML = `
                     <span>${game.name}</span>
-                    <span style="color: #00f2ff; font-weight: bold; margin-left: 15px;">${hours_played} Std.</span>
+                    <span style="color: var(--neon); font-weight: bold;">${hours} h</span>
                 `;
-
-                list_container.appendChild(game_row);
+                list_container.appendChild(row);
             });
 
-            // Update der Status-Zeile ganz oben
-            const total_hours = (total_minutes / 60).toFixed(0);
-            document.getElementById('game_count_status').innerText =
-                `Gefundene Spiele: ${data.games.length} | Gesamtzeit: ${total_hours} Std.`;
+            // Stats Update
+            document.getElementById('count_display').innerText = data.games.length;
+            document.getElementById('time_display').innerText = (total_minutes / 60).toFixed(0);
 
-        } else {
-            list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
-        }
-    } catch (error) {
-        console.error("Fehler im Frontend:", error);
+        } catch (error) { console.error("UI Fehler:", error); }
     }
-}
     </script>
 </body>
 </html>
