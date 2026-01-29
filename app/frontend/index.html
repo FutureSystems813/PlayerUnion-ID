@@ -189,7 +189,7 @@
             const password = document.getElementById('password_field').value;
 
             try {
-                const response = await fetch('/players/', {
+                const response = await fetch('/players', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ username, email, password })
