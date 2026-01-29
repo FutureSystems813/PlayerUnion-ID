@@ -77,16 +77,25 @@
             const gamesDiv = document.getElementById('games');
             gamesDiv.innerHTML = '<h3>Spiele & Spielzeit:</h3>';
 
-            d.games.forEach(game => {
-                const hours = (game.playtime_forever / 60).toFixed(1);
-                const gameElem = document.createElement('div');
-                gameElem.className = 'game-item';
-                // Wichtig: Backticks ` benutzen für die Variablen-Einsetzung!
-                gameElem.innerHTML = `<strong>${game.name}</strong> - ${hours} Stunden`;
-                gamesDiv.appendChild(gameElem);
-            });
+            // WICHTIG: Hier gehen wir die Liste der Spiele durch
+            if (d.games && d.games.length > 0) {
+                d.games.forEach(game => {
+                    const hours = (game.playtime_forever / 60).toFixed(1);
+                    const gameElem = document.createElement('div');
+                    gameElem.style.padding = '8px 0';
+                    gameElem.style.borderBottom = '1px solid #334155';
+                    gameElem.style.textAlign = 'left';
+
+                    // Nutze Backticks (die schrägen Striche) für die Variablen
+                    gameElem.innerHTML = `<strong>${game.name}</strong> - ${hours} Stunden`;
+
+                    gamesDiv.appendChild(gameElem);
+                });
+            } else {
+                gamesDiv.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
+            }
         } catch (err) {
-            console.error(err);
+            console.error("Fehler im Frontend:", err);
         }
     }
     </script>
