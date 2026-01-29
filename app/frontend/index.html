@@ -9,6 +9,7 @@
         input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
         button { padding: 10px 20px; background: #7000ff; color: white; border: none; border-radius: 5px; cursor: pointer; }
         #union-card { display: none; border-left: 5px solid #00f2ff; text-align: left; }
+        .game-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.9em; }
     </style>
 </head>
 <body>
@@ -29,18 +30,16 @@
         <p id="status"></p>
         <div id="games"></div>
     </div>
+
     <script>
     async function reg() {
         try {
-            // Geändert: '/players' statt '/players/' passend zum Backend-Prefix
             const r = await fetch('/players', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({username: document.getElementById('uname').value})
             });
-
             if (!r.ok) throw new Error('Registrierung fehlgeschlagen');
-
             const d = await r.json();
             document.getElementById('pid').value = d.id;
             alert("Erfolgreich registriert! Deine ID ist: " + d.id);
@@ -52,16 +51,13 @@
     async function link() {
         const pid = document.getElementById('pid').value;
         if (!pid) return alert("Bitte zuerst registrieren!");
-
         try {
             const r = await fetch(`/players/${pid}/link`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({steam_id: document.getElementById('sid').value})
             });
-
             if (!r.ok) throw new Error('Verknüpfung fehlgeschlagen');
-
             load(pid);
         } catch (err) {
             alert("Fehler beim Verknüpfen: " + err.message);
@@ -72,15 +68,27 @@
         try {
             const r = await fetch(`/players/${pid}/card`);
             if (!r.ok) throw new Error('Card konnte nicht geladen werden');
-
             const d = await r.json();
+
             document.getElementById('union-card').style.display = 'block';
             document.getElementById('name').innerText = d.steam.personaname;
             document.getElementById('status').innerText = "Spiele gefunden: " + d.games.length;
+
+            const gamesDiv = document.getElementById('games');
+            gamesDiv.innerHTML = '<h3>Spiele & Spielzeit:</h3>';
+
+            d.games.forEach(game => {
+                const hours = (game.playtime_forever / 60).toFixed(1);
+                const gameElem = document.createElement('div');
+                gameElem.className = 'game-item';
+                // Wichtig: Backticks ` benutzen für die Variablen-Einsetzung!
+                gameElem.innerHTML = `<strong>${game.name}</strong> - ${hours} Stunden`;
+                gamesDiv.appendChild(gameElem);
+            });
         } catch (err) {
             console.error(err);
         }
     }
-</script>
+    </script>
 </body>
 </html>
