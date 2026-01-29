@@ -3,50 +3,38 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
-# Importe aus deinen Modulen
 from app.database import create_db_and_tables
 from app.api.routes.player import router as player_router
 
-# Initialisierung der FastAPI App
 app = FastAPI(title="PlayerUnion ID")
 
-# 1. Datenbank beim Start vorbereiten
 @app.on_event("startup")
 def on_startup():
-    """Erstellt alle Tabellen in der Neon-Datenbank, falls sie noch nicht existieren."""
     create_db_and_tables()
 
-# 2. API-Routen einbinden
-# Alle Spieler-Funktionen (Register, Login, Steam-Link) sind hier gebündelt
+# API Routen (Login, Register, etc.)
 app.include_router(player_router, prefix="/players", tags=["Players"])
 
-# Ermittle mögliche Pfade für den frontend-Ordner
-current_dir = os.path.dirname(os.path.abspath(__file__)) # /opt/render/project/src/app
-root_dir = os.path.dirname(current_dir)                 # /opt/render/project/src
+# --- PFAD-LOGIK FIX ---
+# Wir nutzen den absoluten Pfad des Projekts
+base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+frontend_path = os.path.join(base_path, "frontend")
 
-# Wir prüfen zwei Varianten:
-# 1. Neben dem app-Ordner (root/frontend)
-# 2. Im root-Verzeichnis selbst
-frontend_path = os.path.join(root_dir, "frontend")
-
-if not os.path.exists(frontend_path):
-    # Fallback: Suche im aktuellen Verzeichnis
-    frontend_path = os.path.join(os.getcwd(), "frontend")
+# Debug-Ausgabe für die Render-Logs
+print(f"DEBUG: Suche Frontend in: {frontend_path}")
 
 if os.path.exists(frontend_path):
     app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
-    print(f"INFO: Frontend aktiv unter {frontend_path}")
+    print("✅ Frontend erfolgreich gemountet!")
 else:
-    print(f"KRITISCHER FEHLER: Frontend-Ordner existiert nicht! Aktuelles Verzeichnis: {os.getcwd()}")
-    print(f"Inhalt von root: {os.listdir(root_dir)}")
+    # Falls Render den Ordner woanders abgelegt hat
+    fallback_path = os.path.join(os.getcwd(), "frontend")
+    if os.path.exists(fallback_path):
+        app.mount("/frontend", StaticFiles(directory=fallback_path, html=True), name="frontend")
+        print(f"✅ Frontend im Fallback gefunden: {fallback_path}")
+    else:
+        print(f"❌ FEHLER: Ordner 'frontend' nicht gefunden. Inhalt Root: {os.listdir(base_path)}")
 
-# 4. Root-Route für Bequemlichkeit
 @app.get("/")
-async def root_redirect():
-    """Leitet Besucher der Haupt-URL direkt zum Frontend weiter."""
+async def root():
     return RedirectResponse(url="/frontend/")
-
-@app.get("/health")
-async def health_check():
-    """Einfacher Status-Check für Render."""
-    return {"status": "online", "database": "connected"}
