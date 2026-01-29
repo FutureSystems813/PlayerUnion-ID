@@ -1,173 +1,30 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlayerUnion ID | Dashboard</title>
-    <style>
-        :root {
-            --bg-body: #020617;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --accent: #7000ff;
-            --neon: #00f2ff;
-            --text-main: #f8fafc;
-            --border: rgba(51, 65, 85, 0.5);
-        }
-
-        body {
-            font-family: 'Inter', system-ui, sans-serif;
-            /* Dein neues dynamisches Bild */
-            background-image: linear-gradient(rgba(2, 6, 23, 0.75), rgba(2, 6, 23, 0.75)), url('background_0.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
-
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            margin: 0;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            letter-spacing: 4px;
-            background: linear-gradient(to right, var(--neon), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-        }
-
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .glass-card:hover { transform: translateY(-5px); }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .stat-badge {
-            background: rgba(15, 23, 42, 0.5);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .stat-value {
-            display: block;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--neon);
-        }
-
-        input {
-            width: calc(100% - 24px);
-            padding: 12px;
-            background: #0f172a;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: white;
-            margin: 10px 0;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(45deg, var(--accent), #4f46e5);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: filter 0.2s;
-        }
-
-        button:hover { filter: brightness(1.2); }
-
-        #game_list {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-top: 20px;
-            padding-right: 10px;
-        }
-
-        /* Scrollbar Styling */
-        #game_list::-webkit-scrollbar { width: 6px; }
-        #game_list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-
-        .game_item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            margin-bottom: 8px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
-            animation: slideIn 0.4s ease-out;
-        }
-
-        .game_item:hover {
-            background: rgba(112, 0, 255, 0.1);
-            border-color: var(--accent);
-            transform: scale(1.02);
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr; /* Stapelt die Stats übereinander auf Handys */
-            }
-            h1 {
-                font-size: 1.8rem;
-            }
-        }
-
-    </style>
-</head>
 <body>
 
     <h1>PLAYERUNION ID</h1>
 
     <div class="glass-card">
-        <h3>User Management</h3>
+        <h3>Account Verwaltung</h3>
         <input type="text" id="username_field" placeholder="Username">
-        <button onclick="register_account()">Account erstellen</button>
+        <input type="email" id="email_field" placeholder="E-Mail Adresse (nur für Registrierung)">
+        <input type="password" id="password_field" placeholder="Passwort">
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="register_account()" style="flex: 1;">Registrieren</button>
+            <button onclick="login_account()" style="flex: 1; background: #1e293b; border: 1px solid var(--accent);">Login</button>
+        </div>
 
         <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px;">
-            <input type="text" id="player_id_field" placeholder="Deine ID">
+            <h3>Steam Verknüpfung</h3>
+            <input type="text" id="player_id_field" placeholder="Deine ID" readonly style="opacity: 0.7; cursor: not-allowed;">
             <input type="text" id="steam_id_field" placeholder="SteamID64">
-            <button onclick="link_steam_account()" style="background: #1e293b; border: 1px solid var(--accent);">Steam Verknüpfen</button>
+            <button onclick="link_steam_account()" style="background: #1e293b; border: 1px solid var(--neon);">
+                Steam Verknüpfen
+            </button>
         </div>
     </div>
 
     <div id="player_display_card" class="glass-card" style="display: none;">
         <h2 id="steam_name" style="margin-top: 0; color: var(--neon);"></h2>
-
         <div class="stats-grid">
             <div class="stat-badge">
                 <span class="stat-value" id="count_display">0</span>
@@ -178,74 +35,40 @@
                 <small>Gesamtstunden</small>
             </div>
         </div>
-
         <div id="game_list"></div>
     </div>
 
     <script>
-    // Dein gewünschter Snake Case Style
-    async function register_account() {
-        const username = document.getElementById('username_field').value;
-        try {
-            const response = await fetch('/players', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: username})
-            });
-            const data = await response.json();
-            document.getElementById('player_id_field').value = data.id;
-            alert("Account erstellt! ID wurde kopiert.");
-        } catch (error) { console.error("Fehler:", error); }
-    }
+        // ... Deine Funktionen (login_account, register_account) bleiben gleich ...
 
-    async function link_steam_account() {
-        const p_id = document.getElementById('player_id_field').value;
-        const s_id = document.getElementById('steam_id_field').value;
-        try {
-            await fetch(`/players/${p_id}/link`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({steam_id: s_id})
-            });
-            load_ui_data(p_id);
-        } catch (error) { console.error("Fehler:", error); }
-    }
+        async function link_steam_account() {
+            const player_id = document.getElementById('player_id_field').value;
+            const steam_id = document.getElementById('steam_id_field').value;
 
-    async function load_ui_data(p_id) {
-        try {
-            const response = await fetch(`/players/${p_id}/card`);
-            const data = await response.json();
+            if (!player_id) {
+                alert("Bitte logge dich zuerst ein oder registriere dich.");
+                return;
+            }
 
-            document.getElementById('player_display_card').style.display = 'block';
-            document.getElementById('steam_name').innerText = data.steam.personaname;
+            try {
+                // Pfad angepasst an den neuen Router-Endpunkt
+                const response = await fetch(`/players/link-steam?player_id=${player_id}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ steam_id: steam_id })
+                });
 
-            const list_container = document.getElementById('game_list');
-            list_container.innerHTML = '';
+                if (response.ok) {
+                    alert("Steam erfolgreich verknüpft!");
+                    load_ui_data(player_id);
+                } else {
+                    alert("Verknüpfung fehlgeschlagen.");
+                }
+            } catch (error) {
+                console.error("Steam Link Fehler:", error);
+            }
+        }
 
-            let total_minutes = 0;
-
-            // Sortierung nach Spielzeit (Snake Case)
-            const sorted_games = [...data.games].sort((a, b) => b.playtime_forever - a.playtime_forever);
-
-            sorted_games.forEach(game => {
-                total_minutes += game.playtime_forever;
-                const hours = (game.playtime_forever / 60).toFixed(1);
-
-                const row = document.createElement('div');
-                row.className = 'game_item';
-                row.innerHTML = `
-                    <span>${game.name}</span>
-                    <span style="color: var(--neon); font-weight: bold;">${hours} h</span>
-                `;
-                list_container.appendChild(row);
-            });
-
-            // Stats Update
-            document.getElementById('count_display').innerText = data.games.length;
-            document.getElementById('time_display').innerText = (total_minutes / 60).toFixed(0);
-
-        } catch (error) { console.error("UI Fehler:", error); }
-    }
+        // ... restliche Funktionen ...
     </script>
 </body>
-</html>
