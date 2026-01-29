@@ -4,98 +4,124 @@
     <meta charset="UTF-8">
     <title>PlayerUnion ID | Dashboard</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; padding: 40px; text-align: center; }
-        .card { background: #1e293b; padding: 20px; border-radius: 10px; margin: 10px auto; max-width: 500px; border: 1px solid #334155; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        button { padding: 10px 20px; background: #7000ff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #union-card { display: none; border-left: 5px solid #00f2ff; text-align: left; }
-        .game-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.9em; }
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #7000ff;
+            --border: #334155;
+            --neon: #00f2ff;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: white; padding: 40px; text-align: center; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; margin: 15px auto; max-width: 550px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        input { width: 85%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid var(--border); background: #0f172a; color: white; }
+        button { width: 90%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        #union_card { display: none; border-left: 5px solid var(--neon); text-align: left; }
+        .game_item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95em; }
+        .playtime { color: var(--neon); font-weight: bold; }
+        h1 { letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <h1>PLAYERUNION ID</h1>
+
     <div class="card">
         <h3>1. Registrieren</h3>
         <input type="text" id="uname" placeholder="Username">
-        <button onclick="reg()">Erstellen</button>
+        <button onclick="register_user()">Account erstellen</button>
     </div>
+
     <div class="card">
         <h3>2. Steam Link</h3>
         <input type="text" id="pid" placeholder="Pulse-ID">
         <input type="text" id="sid" placeholder="SteamID64">
-        <button onclick="link()">Verknüpfen</button>
+        <button onclick="link_steam()">Verknüpfen</button>
     </div>
-    <div id="union-card" class="card">
-        <h2 id="name"></h2>
-        <p id="status"></p>
-        <div id="games"></div>
+
+    <div id="union_card" class="card">
+        <h2 id="display_name"></h2>
+        <p id="game_count_status"></p>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+        <div id="game_list"></div>
     </div>
 
     <script>
-    async function reg() {
+    async function register_user() {
+        const username_input = document.getElementById('uname').value;
         try {
-            const r = await fetch('/players', {
+            const response = await fetch('/players', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: document.getElementById('uname').value})
+                body: JSON.stringify({username: username_input})
             });
-            if (!r.ok) throw new Error('Registrierung fehlgeschlagen');
-            const d = await r.json();
-            document.getElementById('pid').value = d.id;
-            alert("Erfolgreich registriert! Deine ID ist: " + d.id);
-        } catch (err) {
-            alert("Fehler: " + err.message);
+
+            if (!response.ok) throw new Error('Registrierung fehlgeschlagen');
+
+            const data = await response.json();
+            document.getElementById('pid').value = data.id;
+            alert(`Erfolgreich registriert! Deine ID: ${data.id}`);
+        } catch (error) {
+            alert(`Fehler: ${error.message}`);
         }
     }
 
-    async function link() {
-        const pid = document.getElementById('pid').value;
-        if (!pid) return alert("Bitte zuerst registrieren!");
+    async function link_steam() {
+        const player_id = document.getElementById('pid').value;
+        const steam_id = document.getElementById('sid').value;
+
+        if (!player_id) return alert("Bitte zuerst registrieren!");
+
         try {
-            const r = await fetch(`/players/${pid}/link`, {
+            const response = await fetch(`/players/${player_id}/link`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({steam_id: document.getElementById('sid').value})
+                body: JSON.stringify({steam_id: steam_id})
             });
-            if (!r.ok) throw new Error('Verknüpfung fehlgeschlagen');
-            load(pid);
-        } catch (err) {
-            alert("Fehler beim Verknüpfen: " + err.message);
+
+            if (!response.ok) throw new Error('Verknüpfung fehlgeschlagen');
+
+            load_player_card(player_id);
+        } catch (error) {
+            alert(`Fehler beim Verknüpfen: ${error.message}`);
         }
     }
 
-    async function load(pid) {
+    async function load_player_card(player_id) {
         try {
-            const r = await fetch(`/players/${pid}/card`);
-            if (!r.ok) throw new Error('Card konnte nicht geladen werden');
-            const d = await r.json();
+            const response = await fetch(`/players/${player_id}/card`);
+            if (!response.ok) throw new Error('Card konnte nicht geladen werden');
 
-            document.getElementById('union-card').style.display = 'block';
-            document.getElementById('name').innerText = d.steam.personaname;
-            document.getElementById('status').innerText = "Spiele gefunden: " + d.games.length;
+            const data = await response.json();
 
-            const gamesDiv = document.getElementById('games');
-            gamesDiv.innerHTML = '<h3>Spiele & Spielzeit:</h3>';
+            // UI Einblenden & Basisdaten
+            document.getElementById('union_card').style.display = 'block';
+            document.getElementById('display_name').innerText = data.steam.personaname;
+            document.getElementById('game_count_status').innerText = `Gefundene Spiele: ${data.games.length}`;
 
-            // WICHTIG: Hier gehen wir die Liste der Spiele durch
-            if (d.games && d.games.length > 0) {
-                d.games.forEach(game => {
-                    const hours = (game.playtime_forever / 60).toFixed(1);
-                    const gameElem = document.createElement('div');
-                    gameElem.style.padding = '8px 0';
-                    gameElem.style.borderBottom = '1px solid #334155';
-                    gameElem.style.textAlign = 'left';
+            const list_container = document.getElementById('game_list');
+            list_container.innerHTML = '<h3>Deine Top Spiele:</h3>';
 
-                    // Nutze Backticks (die schrägen Striche) für die Variablen
-                    gameElem.innerHTML = `<strong>${game.name}</strong> - ${hours} Stunden`;
+            if (data.games && data.games.length > 0) {
+                // Sortierung nach Spielzeit (Snake Case Variable)
+                const sorted_games = data.games.sort((a, b) => b.playtime_forever - a.playtime_forever);
 
-                    gamesDiv.appendChild(gameElem);
+                sorted_games.forEach(game => {
+                    const hours_played = (game.playtime_forever / 60).toFixed(1);
+                    const game_row = document.createElement('div');
+                    game_row.className = 'game_item';
+
+                    game_row.innerHTML = `
+                        <span>${game.name}</span>
+                        <span class="playtime">${hours_played} Std.</span>
+                    `;
+
+                    list_container.appendChild(game_row);
                 });
             } else {
-                gamesDiv.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
+                list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
             }
-        } catch (err) {
-            console.error("Fehler im Frontend:", err);
+        } catch (error) {
+            console.error("Frontend Fehler:", error);
         }
     }
     </script>
