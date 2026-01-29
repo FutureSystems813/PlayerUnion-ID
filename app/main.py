@@ -12,28 +12,23 @@ app = FastAPI(title="PlayerUnion ID")
 def on_startup():
     create_db_and_tables()
 
-# API Routen (Login, Register, etc.)
 app.include_router(player_router, prefix="/players", tags=["Players"])
 
-# --- PFAD-LOGIK FIX ---
-# Wir nutzen den absoluten Pfad des Projekts
-base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-frontend_path = os.path.join(base_path, "frontend")
+# --- PFAD-LOGIK FÜR app/frontend ---
+# Da die main.py im Ordner 'app' liegt, ist der frontend-Ordner ein Nachbar
+current_file_dir = os.path.dirname(os.path.abspath(__file__)) # Dies ist der 'app' Ordner
+frontend_path = os.path.join(current_file_dir, "frontend")
 
-# Debug-Ausgabe für die Render-Logs
 print(f"DEBUG: Suche Frontend in: {frontend_path}")
 
 if os.path.exists(frontend_path):
+    # WICHTIG: StaticFiles braucht den korrekten absoluten Pfad
     app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
-    print("✅ Frontend erfolgreich gemountet!")
+    print("✅ Frontend erfolgreich in app/frontend gefunden!")
 else:
-    # Falls Render den Ordner woanders abgelegt hat
-    fallback_path = os.path.join(os.getcwd(), "frontend")
-    if os.path.exists(fallback_path):
-        app.mount("/frontend", StaticFiles(directory=fallback_path, html=True), name="frontend")
-        print(f"✅ Frontend im Fallback gefunden: {fallback_path}")
-    else:
-        print(f"❌ FEHLER: Ordner 'frontend' nicht gefunden. Inhalt Root: {os.listdir(base_path)}")
+    print(f"❌ FEHLER: Ordner nicht gefunden unter {frontend_path}")
+    # Sicherheits-Check: Was sieht Python im app-Ordner?
+    print(f"DEBUG: Inhalt von {current_file_dir}: {os.listdir(current_file_dir)}")
 
 @app.get("/")
 async def root():
