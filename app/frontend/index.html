@@ -87,58 +87,57 @@
     }
 
     async function load_player_card(player_id) {
-        try {
-            const response = await fetch(`/players/${player_id}/card`);
-            if (!response.ok) throw new Error('Card konnte nicht geladen werden');
+    try {
+        const response = await fetch(`/players/${player_id}/card`);
+        if (!response.ok) throw new Error('Card konnte nicht geladen werden');
 
-            const data = await response.json();
+        const data = await response.json();
 
-            document.getElementById('union_card').style.display = 'block';
-            document.getElementById('display_name').innerText = data.steam.personaname;
+        document.getElementById('union_card').style.display = 'block';
+        document.getElementById('display_name').innerText = data.steam.personaname;
 
-            const list_container = document.getElementById('game_list');
-            list_container.innerHTML = '<h3>Deine Top Spiele:</h3>';
+        const list_container = document.getElementById('game_list');
+        list_container.innerHTML = '<h3>Deine Top Spiele:</h3>';
 
-            if (data.games && data.games.length > 0) {
-                let total_minutes = 0; // Variable zum Summieren
+        if (data.games && data.games.length > 0) {
+            let total_minutes = 0;
 
-                // Sortierung (Snake Case)
-                const sorted_games = [...data.games].sort((game_a, game_b) => {
-                    return game_b.playtime_forever - game_a.playtime_forever;
-                });
+            const sorted_games = [...data.games].sort((game_a, game_b) => {
+                return game_b.playtime_forever - game_a.playtime_forever;
+            });
 
-                sorted_games.forEach(game => {
-                    total_minutes += game.playtime_forever; // Zeit addieren
+            sorted_games.forEach(game => {
+                total_minutes += game.playtime_forever;
 
-                    const hours_played = (game.playtime_forever / 60).toFixed(1);
-                    const game_row = document.createElement('div');
-                    game_row.className = 'game_item';
+                const hours_played = (game.playtime_forever / 60).toFixed(1);
+                const game_row = document.createElement('div');
 
-                    game_row.style.display = 'flex';
-                    game_row.style.justifyContent = 'space-between';
-                    game_row.style.padding = '8px 0';
-                    game_row.style.borderBottom = '1px solid #334155';
+                // Styling für bessere Lesbarkeit
+                game_row.style.display = 'flex';
+                game_row.style.justifyContent = 'space-between';
+                game_row.style.padding = '8px 0';
+                game_row.style.borderBottom = '1px solid #334155';
 
-                    game_row.innerHTML = `
-                        <span>${game.name}</span>
-                        <span style="color: #00f2ff; font-weight: bold;">${hours_played} Std.</span>
-                    `;
+                game_row.innerHTML = `
+                    <span>${game.name}</span>
+                    <span style="color: #00f2ff; font-weight: bold; margin-left: 15px;">${hours_played} Std.</span>
+                `;
 
-                    list_container.appendChild(game_row);
-                });
+                list_container.appendChild(game_row);
+            });
 
-                // Gesamtspielzeit oben anzeigen (neben der Anzahl der Spiele)
-                const total_hours = (total_minutes / 60).toFixed(0);
-                document.getElementById('game_count_status').innerText =
-                    `Spiele gefunden: ${data.games.length} | Gesamtspielzeit: ${total_hours} Stunden`;
+            // Update der Status-Zeile ganz oben
+            const total_hours = (total_minutes / 60).toFixed(0);
+            document.getElementById('game_count_status').innerText =
+                `Gefundene Spiele: ${data.games.length} | Gesamtzeit: ${total_hours} Std.`;
 
-            } else {
-                list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
-            }
-        } catch (error) {
-            console.error("Fehler im Frontend:", error);
+        } else {
+            list_container.innerHTML += '<p>Keine öffentlichen Spieldaten gefunden.</p>';
         }
+    } catch (error) {
+        console.error("Fehler im Frontend:", error);
     }
+}
     </script>
 </body>
 </html>
