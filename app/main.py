@@ -20,19 +20,25 @@ def on_startup():
 # Alle Spieler-Funktionen (Register, Login, Steam-Link) sind hier gebündelt
 app.include_router(player_router, prefix="/players", tags=["Players"])
 
-# 3. Statische Dateien (Frontend) Pfad-Konfiguration
-# Wir ermitteln den Pfad relativ zur main.py, um Fehler auf Render zu vermeiden
-current_directory = os.path.dirname(os.path.abspath(__file__)) # Verzeichnis: app/
-root_directory = os.path.dirname(current_directory)            # Hauptverzeichnis
-frontend_directory = os.path.join(root_directory, "frontend")
+# Ermittle mögliche Pfade für den frontend-Ordner
+current_dir = os.path.dirname(os.path.abspath(__file__)) # /opt/render/project/src/app
+root_dir = os.path.dirname(current_dir)                 # /opt/render/project/src
 
-# Prüfen, ob der Frontend-Ordner existiert, bevor wir ihn mounten
-if os.path.exists(frontend_directory):
-    # 'html=True' lässt /frontend/ automatisch die index.html laden
-    app.mount("/frontend", StaticFiles(directory=frontend_directory, html=True), name="frontend")
-    print(f"INFO: Frontend erfolgreich gemountet unter: {frontend_directory}")
+# Wir prüfen zwei Varianten:
+# 1. Neben dem app-Ordner (root/frontend)
+# 2. Im root-Verzeichnis selbst
+frontend_path = os.path.join(root_dir, "frontend")
+
+if not os.path.exists(frontend_path):
+    # Fallback: Suche im aktuellen Verzeichnis
+    frontend_path = os.path.join(os.getcwd(), "frontend")
+
+if os.path.exists(frontend_path):
+    app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    print(f"INFO: Frontend aktiv unter {frontend_path}")
 else:
-    print(f"WARNUNG: Frontend-Verzeichnis nicht gefunden unter: {frontend_directory}")
+    print(f"KRITISCHER FEHLER: Frontend-Ordner existiert nicht! Aktuelles Verzeichnis: {os.getcwd()}")
+    print(f"Inhalt von root: {os.listdir(root_dir)}")
 
 # 4. Root-Route für Bequemlichkeit
 @app.get("/")

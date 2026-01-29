@@ -227,22 +227,27 @@
 
         // Steam Link
         async function link_steam_account() {
-            const p_id = document.getElementById('player_id_field').value;
-            const s_id = document.getElementById('steam_id_field').value;
-            if(!p_id) return alert("Logge dich erst ein!");
+    const player_id = document.getElementById('player_id_field').value;
+    const steam_id = document.getElementById('steam_id_field').value;
 
-            try {
-                const response = await fetch(`/players/link-steam?player_id=${p_id}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ steam_id: s_id })
-                });
-                if (response.ok) {
-                    alert("Verknüpft!");
-                    load_ui_data(p_id);
-                }
-            } catch (e) { console.error(e); }
+    if (!player_id) return alert("Bitte erst einloggen!");
+
+    // WICHTIG: Der Pfad muss zum Router passen: /players/link-steam
+    try {
+        const response = await fetch(`/players/link-steam?player_id=${player_id}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ steam_id: steam_id })
+        });
+
+        if (response.ok) {
+            alert("Steam verknüpft!");
+            load_ui_data(player_id);
+        } else {
+            alert("Fehler beim Verknüpfen.");
         }
+    } catch (e) { console.error(e); }
+}
 
         // UI Daten laden
         async function load_ui_data(p_id) {
